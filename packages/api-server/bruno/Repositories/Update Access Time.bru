@@ -1,0 +1,33 @@
+meta {
+  name: Update Access Time
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/api/repositories/1/access
+  body: none
+  auth: none
+}
+
+docs {
+  更新儲存庫最後存取時間
+  
+  路徑參數：
+  - id: 儲存庫 ID
+  
+  用途：
+  - 記錄用戶存取儲存庫的時間
+  - 用於「最近使用」功能
+  - 前端切換儲存庫時自動呼叫
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+} 

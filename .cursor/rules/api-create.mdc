@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+if the request is create api service, or included routes update
+should always update the bruno file in api-server

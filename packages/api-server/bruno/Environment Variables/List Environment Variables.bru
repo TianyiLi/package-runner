@@ -1,0 +1,48 @@
+meta {
+  name: List Environment Variables
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/env
+  body: none
+  auth: none
+}
+
+params:query {
+  repositoryId: 1
+  maskSecrets: true
+  page: 1
+  limit: 10
+}
+
+docs {
+  獲取環境變數列表
+  
+  查詢參數：
+  - repositoryId: 儲存庫 ID 篩選 (可選)
+  - maskSecrets: 是否遮蔽敏感資訊 (預設: true)
+  - page: 頁碼 (預設: 1)
+  - limit: 每頁數量 (預設: 10)
+  
+  安全性：
+  - 預設會遮蔽標記為敏感的環境變數值
+  - 敏感值會顯示為 ******** 
+  - 設定 maskSecrets=false 可顯示實際值 (小心使用)
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should have pagination", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('pagination');
+  });
+} 

@@ -1,0 +1,39 @@
+meta {
+  name: System Status
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/system/status
+  body: none
+  auth: none
+}
+
+docs {
+  獲取系統詳細狀態資訊
+  
+  回應包含：
+  - success: 請求是否成功
+  - data.status: 系統健康狀態
+  - data.uptime: 系統運行時間
+  - data.memoryUsage: 記憶體使用情況
+  - data.activeScripts: 活動腳本數量
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should have system data", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property('status');
+    expect(data).to.have.property('uptime');
+    expect(data).to.have.property('memoryUsage');
+  });
+} 

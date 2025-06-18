@@ -1,0 +1,33 @@
+meta {
+  name: Delete Environment Variable
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseUrl}}/api/env/1
+  body: none
+  auth: none
+}
+
+docs {
+  刪除環境變數
+  
+  路徑參數：
+  - id: 環境變數 ID
+  
+  注意：
+  - 此操作會永久刪除環境變數
+  - 刪除後無法復原
+  - 建議在刪除敏感變數前先備份
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+} 

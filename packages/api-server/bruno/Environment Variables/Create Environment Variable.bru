@@ -1,0 +1,56 @@
+meta {
+  name: Create Environment Variable
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/env
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "key": "API_KEY",
+    "value": "your-secret-api-key",
+    "isSecret": true,
+    "repositoryId": "1"
+  }
+}
+
+docs {
+  建立新的環境變數
+  
+  請求體參數：
+  - key: 環境變數名稱 (必填，需符合環境變數命名規則)
+  - value: 環境變數值 (必填)
+  - isSecret: 是否為敏感資訊 (預設: false)
+  - repositoryId: 所屬儲存庫 ID (必填)
+  
+  驗證規則：
+  - key 必須符合 [A-Z_][A-Z0-9_]* 格式
+  - 同一儲存庫內 key 不能重複
+  - value 不能為空
+  
+  安全性：
+  - 標記為 secret 的變數在列表中會被遮蔽
+  - 建議將密碼、API 金鑰等敏感資訊標記為 secret
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should return created env variable", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property('id');
+    expect(data.key).to.equal('API_KEY');
+    expect(data.isSecret).to.be.true;
+  });
+} 

@@ -1,0 +1,33 @@
+meta {
+  name: Delete Repository
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/api/repositories/1
+  body: none
+  auth: none
+}
+
+docs {
+  刪除儲存庫
+  
+  路徑參數：
+  - id: 儲存庫 ID
+  
+  注意：
+  - 此操作會永久刪除儲存庫記錄
+  - 如果有運行中的腳本會被自動停止
+  - 相關的環境變數也會被刪除
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+} 

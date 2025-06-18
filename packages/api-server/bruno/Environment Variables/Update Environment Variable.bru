@@ -1,0 +1,43 @@
+meta {
+  name: Update Environment Variable
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/env/1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "value": "updated-secret-value",
+    "isSecret": false
+  }
+}
+
+docs {
+  更新環境變數
+  
+  路徑參數：
+  - id: 環境變數 ID
+  
+  請求體參數（可選）：
+  - value: 新的環境變數值
+  - isSecret: 是否為敏感資訊
+  
+  注意：
+  - key 和 repositoryId 不能更新
+  - 至少需要提供一個要更新的欄位
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+} 

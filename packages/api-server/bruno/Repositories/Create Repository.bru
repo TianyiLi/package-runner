@@ -1,0 +1,53 @@
+meta {
+  name: Create Repository
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/repositories
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "my-new-project",
+    "path": "/path/to/project",
+    "type": "vite",
+    "packageManager": "npm"
+  }
+}
+
+docs {
+  建立新的儲存庫
+  
+  請求體參數：
+  - name: 儲存庫名稱 (必填)
+  - path: 儲存庫路徑 (必填)
+  - type: 專案類型 (vite, next, react, node, unknown)
+  - packageManager: 包管理器 (npm, pnpm, yarn, bun)
+  
+  系統會自動：
+  - 驗證路徑是否存在
+  - 檢測並讀取 package.json
+  - 掃描配置文件
+  - 設定建立時間
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should return created repository", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property('id');
+    expect(data.name).to.equal('my-new-project');
+    expect(data.type).to.equal('vite');
+  });
+} 

@@ -1,0 +1,48 @@
+meta {
+  name: Generate Env File
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/env/repository/1/file
+  body: none
+  auth: none
+}
+
+docs {
+  為指定儲存庫生成 .env 文件內容
+  
+  路徑參數：
+  - repositoryId: 儲存庫 ID
+  
+  功能：
+  - 將該儲存庫的所有環境變數匯出為 .env 格式
+  - 包含敏感變數的實際值
+  - 設定正確的 Content-Type 和下載檔頭
+  - 文件名自動設為 .env
+  
+  格式：
+  KEY1=value1
+  KEY2=value2
+  SECRET_KEY=secret_value
+  
+  注意：
+  - 此 API 會暴露敏感資訊，請謹慎使用
+  - 建議在安全環境下呼叫
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Content-Type should be text/plain", function() {
+    expect(res.getHeader('Content-Type')).to.equal('text/plain');
+  });
+  
+  test("Should have download disposition", function() {
+    expect(res.getHeader('Content-Disposition')).to.include('attachment');
+    expect(res.getHeader('Content-Disposition')).to.include('.env');
+  });
+} 

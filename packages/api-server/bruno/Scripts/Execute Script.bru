@@ -1,0 +1,55 @@
+meta {
+  name: Execute Script
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/scripts/1/execute
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "arguments": "--port 3000",
+    "environment": {
+      "NODE_ENV": "development",
+      "DEBUG": "true"
+    }
+  }
+}
+
+docs {
+  執行指定腳本
+  
+  路徑參數：
+  - id: 腳本 ID
+  
+  請求體參數（可選）：
+  - arguments: 命令行參數
+  - environment: 環境變數 (會覆蓋現有環境變數)
+  
+  執行流程：
+  1. 驗證腳本是否存在且未運行
+  2. 在指定目錄下執行命令
+  3. 注入環境變數
+  4. 捕獲即時輸出
+  5. 記錄執行狀態
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Script should be running", function() {
+    const data = res.getBody().data;
+    expect(data.isRunning).to.be.true;
+    expect(data).to.have.property('lastRun');
+  });
+} 

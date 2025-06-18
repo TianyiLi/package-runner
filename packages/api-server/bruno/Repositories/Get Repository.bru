@@ -1,0 +1,42 @@
+meta {
+  name: Get Repository
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/repositories/1
+  body: none
+  auth: none
+}
+
+docs {
+  根據 ID 獲取儲存庫詳細資訊
+  
+  路徑參數：
+  - id: 儲存庫 ID
+  
+  回應包含完整的儲存庫資訊，包括：
+  - 基本資訊 (名稱、路徑、類型)
+  - package.json 內容
+  - 配置文件列表
+  - 最後存取時間
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should have repository data", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property('id');
+    expect(data).to.have.property('name');
+    expect(data).to.have.property('path');
+    expect(data).to.have.property('type');
+  });
+} 

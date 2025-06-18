@@ -1,0 +1,44 @@
+meta {
+  name: Get Script Output
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/scripts/1/output
+  body: none
+  auth: none
+}
+
+docs {
+  獲取腳本執行輸出
+  
+  路徑參數：
+  - id: 腳本 ID
+  
+  回應內容：
+  - 返回字串陣列，每個元素是一行輸出
+  - 包含 stdout 和 stderr 輸出
+  - 錯誤輸出會以 "ERROR:" 前綴標記
+  - 按時間順序排列
+  
+  用途：
+  - 即時顯示腳本執行日誌
+  - 除錯和監控腳本運行狀態
+  - 查看執行結果和錯誤訊息
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should return array of strings", function() {
+    const data = res.getBody().data;
+    expect(data).to.be.an('array');
+  });
+} 

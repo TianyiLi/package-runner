@@ -1,0 +1,47 @@
+meta {
+  name: List Scripts
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/scripts
+  body: none
+  auth: none
+}
+
+params:query {
+  repositoryId: 1
+  page: 1
+  limit: 10
+}
+
+docs {
+  獲取腳本列表
+  
+  查詢參數：
+  - repositoryId: 儲存庫 ID 篩選 (可選)
+  - page: 頁碼 (預設: 1)
+  - limit: 每頁數量 (預設: 10)
+  
+  回應包含腳本的詳細資訊：
+  - 腳本名稱和命令
+  - 運行狀態
+  - 最後執行時間
+  - 輸出記錄
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should have pagination", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('pagination');
+  });
+} 

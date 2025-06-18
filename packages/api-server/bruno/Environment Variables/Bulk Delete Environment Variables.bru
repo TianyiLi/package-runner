@@ -1,0 +1,57 @@
+meta {
+  name: Bulk Delete Environment Variables
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/env/bulk
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "ids": [1, 2, 3, 4, 5]
+  }
+}
+
+docs {
+  批量刪除環境變數
+  
+  請求體參數：
+  - ids: 要刪除的環境變數 ID 陣列 (必填)
+  
+  處理邏輯：
+  - 會跳過不存在的 ID
+  - 回傳成功刪除的 ID 列表和失敗的 ID 資訊
+  - 所有操作都會記錄在日誌中
+  
+  注意：
+  - 此操作會永久刪除指定的環境變數
+  - 刪除後無法復原
+  - 建議在批量刪除前先備份重要資料
+  
+  適用場景：
+  - 清理過期的環境變數
+  - 重設專案環境配置
+  - 批量移除測試用變數
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should return deleted and failed arrays", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property('deleted');
+    expect(data).to.have.property('failed');
+    expect(data.deleted).to.be.an('array');
+    expect(data.failed).to.be.an('array');
+  });
+} 

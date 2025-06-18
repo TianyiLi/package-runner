@@ -1,0 +1,37 @@
+meta {
+  name: Stop Script
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/scripts/1/stop
+  body: none
+  auth: none
+}
+
+docs {
+  停止運行中的腳本
+  
+  路徑參數：
+  - id: 腳本 ID
+  
+  停止機制：
+  1. 首先發送 SIGTERM 信號優雅停止
+  2. 5 秒後如果仍未停止，發送 SIGKILL 強制終止
+  3. 清理進程記錄和運行狀態
+  
+  注意：
+  - 只能停止運行中的腳本
+  - 停止後腳本狀態會更新為已停止
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+} 

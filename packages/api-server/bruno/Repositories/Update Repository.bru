@@ -1,0 +1,47 @@
+meta {
+  name: Update Repository
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/repositories/1
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "updated-project-name",
+    "type": "next"
+  }
+}
+
+docs {
+  更新儲存庫資訊
+  
+  路徑參數：
+  - id: 儲存庫 ID
+  
+  請求體參數（所有欄位都是可選的）：
+  - name: 儲存庫名稱
+  - path: 儲存庫路徑
+  - type: 專案類型
+  - packageManager: 包管理器
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should return updated repository", function() {
+    const data = res.getBody().data;
+    expect(data).to.have.property('id');
+    expect(data.name).to.equal('updated-project-name');
+  });
+} 

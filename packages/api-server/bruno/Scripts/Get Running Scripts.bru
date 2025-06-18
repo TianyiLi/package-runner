@@ -1,0 +1,40 @@
+meta {
+  name: Get Running Scripts
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/scripts/running
+  body: none
+  auth: none
+}
+
+docs {
+  獲取所有運行中的腳本
+  
+  用途：
+  - 監控目前活動的腳本
+  - 顯示系統負載狀況
+  - 用於首頁儀表板顯示
+  
+  回應包含：
+  - 腳本基本資訊
+  - 運行時間
+  - 進程 ID
+  - 所屬儲存庫
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be successful", function() {
+    expect(res.getBody().success).to.be.true;
+  });
+  
+  test("Should return array", function() {
+    expect(res.getBody().data).to.be.an('array');
+  });
+} 

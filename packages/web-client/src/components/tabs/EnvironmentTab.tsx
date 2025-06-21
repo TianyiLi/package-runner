@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { envVariablesAtom } from '@/store/atoms';
+import { currentRepositoryEnvVarsAtom, envVariablesAtom, selectedRepositoryAtom } from '@/store/atoms';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
 
@@ -24,9 +24,11 @@ const envSchema = z.object({
 type EnvFormData = z.infer<typeof envSchema>;
 
 export function EnvironmentTab() {
-  const [envVariables, setEnvVariables] = useAtom(envVariablesAtom);
+  const envVariables = useAtomValue(currentRepositoryEnvVarsAtom);
+  const setEnvVariables = useSetAtom(envVariablesAtom);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [selectedRepo] = useAtom(selectedRepositoryAtom);
 
   const form = useForm<EnvFormData>({
     resolver: zodResolver(envSchema),
@@ -52,7 +54,7 @@ export function EnvironmentTab() {
       // Update existing variable
       setEnvVariables(prev => 
         prev.map((env, index) => 
-          index === editingIndex ? data : env
+          index === editingIndex ? { ...data, repositoryId: selectedRepo!.id } : env
         )
       );
       setEditingIndex(null);

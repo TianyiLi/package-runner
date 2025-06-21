@@ -1,2 +1,2 @@
-src/components/ui/*
-hooks/use-toast.ts
+packages/web-client/src/components/ui/*
+packages/web-client/src/hooks/use-toast.ts

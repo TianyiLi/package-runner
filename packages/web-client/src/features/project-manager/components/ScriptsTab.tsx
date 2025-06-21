@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useAtom, useSetAtom } from 'jotai';
 import { Play, Square, Settings, Plus, Terminal, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,15 +7,22 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { currentRepositoryScriptsAtom, selectedRepositoryAtom, scriptsAtom } from '@/store/atoms';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useProjectScripts } from '../hooks/useProjectScripts';
 
 export function ScriptsTab() {
-  const [currentScripts] = useAtom(currentRepositoryScriptsAtom);
-  const setAllScripts = useSetAtom(scriptsAtom);
-  const [selectedRepo] = useAtom(selectedRepositoryAtom);
+  const {
+    currentScripts,
+    selectedRepo,
+    runningScripts,
+    initializeScripts,
+    runScript,
+    stopScript,
+    getScriptTypeIcon
+  } = useProjectScripts();
+  
   const [selectedScript, setSelectedScript] = useState<string>('');
   const [scriptArgs, setScriptArgs] = useState<string>('');
   const [packageManager, setPackageManager] = useState<string>('npm');
@@ -24,84 +30,23 @@ export function ScriptsTab() {
   if (!selectedRepo) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">No repository selected</p>
+        <p className="text-muted-foreground">未選擇倉庫</p>
       </div>
     );
   }
 
-  // Mock scripts from package.json
-  const packageJsonScripts = selectedRepo.packageJson?.scripts || {};
-  
-  // Initialize scripts for this repository if not exists
-  const initializeScripts = () => {
-    const existingScripts = currentScripts.map(s => s.name);
-    const newScripts = Object.entries(packageJsonScripts)
-      .filter(([name]) => !existingScripts.includes(name))
-      .map(([name, command]) => ({
-        name,
-        command: command as string,
-        isRunning: false,
-        repositoryId: selectedRepo.id
-      }));
-
-    if (newScripts.length > 0) {
-      setAllScripts(prev => [...prev, ...newScripts]);
-    }
-  };
-
   // Initialize scripts on component mount
-  if (currentScripts.length === 0 && Object.keys(packageJsonScripts).length > 0) {
+  if (currentScripts.length === 0 && selectedRepo.packageJson?.scripts && Object.keys(selectedRepo.packageJson.scripts).length > 0) {
     initializeScripts();
   }
-
-  const handleRunScript = (scriptName: string) => {
-    setAllScripts(prev => 
-      prev.map(script => 
-        script.name === scriptName && script.repositoryId === selectedRepo.id
-          ? { ...script, isRunning: true, lastRun: new Date() }
-          : script
-      )
-    );
-    
-    // Simulate script execution
-    setTimeout(() => {
-      setAllScripts(prev => 
-        prev.map(script => 
-          script.name === scriptName && script.repositoryId === selectedRepo.id
-            ? { ...script, isRunning: false, output: ['Script completed successfully'] }
-            : script
-        )
-      );
-    }, 3000);
-  };
-
-  const handleStopScript = (scriptName: string) => {
-    setAllScripts(prev => 
-      prev.map(script => 
-        script.name === scriptName && script.repositoryId === selectedRepo.id
-          ? { ...script, isRunning: false }
-          : script
-      )
-    );
-  };
-
-  const getScriptTypeIcon = (scriptName: string) => {
-    if (scriptName.includes('dev') || scriptName.includes('start')) return '🚀';
-    if (scriptName.includes('build')) return '🔨';
-    if (scriptName.includes('test')) return '🧪';
-    if (scriptName.includes('lint')) return '🔍';
-    return '⚙️';
-  };
-
-  const runningScripts = currentScripts.filter(script => script.isRunning);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Package Scripts</h2>
+          <h2 className="text-2xl font-bold">套件腳本</h2>
           <p className="text-muted-foreground">
-            Manage and execute scripts for <span className="font-medium">{selectedRepo.name}</span>
+            管理和執行 <span className="font-medium">{selectedRepo.name}</span> 的腳本
           </p>
         </div>
         <div className="flex gap-2">
@@ -109,30 +54,30 @@ export function ScriptsTab() {
             <DialogTrigger asChild>
               <Button variant="outline">
                 <Plus className="mr-2 h-4 w-4" />
-                Add Script
+                新增腳本
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Script</DialogTitle>
+                <DialogTitle>新增腳本</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="script-name">Script Name</Label>
-                  <Input id="script-name" placeholder="e.g., test" />
+                  <Label htmlFor="script-name">腳本名稱</Label>
+                  <Input id="script-name" placeholder="例如：test" />
                 </div>
                 <div>
-                  <Label htmlFor="script-command">Command</Label>
-                  <Textarea id="script-command" placeholder="e.g., npm test" />
+                  <Label htmlFor="script-command">指令</Label>
+                  <Textarea id="script-command" placeholder="例如：npm test" />
                 </div>
-                <Button className="w-full">Add Script</Button>
+                <Button className="w-full">新增腳本</Button>
               </div>
             </DialogContent>
           </Dialog>
           
           <Button>
             <Terminal className="mr-2 h-4 w-4" />
-            Open Terminal
+            開啟終端
           </Button>
         </div>
       </div>
@@ -144,7 +89,7 @@ export function ScriptsTab() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
               <span className="font-medium">
-                {runningScripts.length} script{runningScripts.length > 1 ? 's' : ''} running
+                {runningScripts.length} 個腳本正在執行
               </span>
             </div>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -165,7 +110,7 @@ export function ScriptsTab() {
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <Play className="h-5 w-5" />
-                Available Scripts
+                可用腳本
               </span>
               <Badge variant="secondary">{currentScripts.length}</Badge>
             </CardTitle>
@@ -185,7 +130,7 @@ export function ScriptsTab() {
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium">{script.name}</h4>
                             <Badge variant={script.isRunning ? 'default' : 'secondary'}>
-                              {script.isRunning ? 'Running' : 'Idle'}
+                              {script.isRunning ? '執行中' : '閒置'}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground font-mono">
@@ -196,7 +141,7 @@ export function ScriptsTab() {
                       {script.lastRun && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          Last run: {script.lastRun.toLocaleString()}
+                          上次執行：{script.lastRun.toLocaleString()}
                         </div>
                       )}
                     </div>
@@ -205,14 +150,14 @@ export function ScriptsTab() {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleStopScript(script.name)}
+                          onClick={() => stopScript(script.name)}
                         >
                           <Square className="h-4 w-4" />
                         </Button>
                       ) : (
                         <Button
                           size="sm"
-                          onClick={() => handleRunScript(script.name)}
+                          onClick={() => runScript(script.name)}
                         >
                           <Play className="h-4 w-4" />
                         </Button>
@@ -223,30 +168,22 @@ export function ScriptsTab() {
                     </div>
                   </div>
                 ))}
-                
-                {currentScripts.length === 0 && (
-                  <div className="text-center py-8">
-                    <Terminal className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No scripts found in package.json</p>
-                    <p className="text-sm text-muted-foreground">Add scripts to get started</p>
-                  </div>
-                )}
               </div>
             </ScrollArea>
           </CardContent>
         </Card>
 
-        {/* Script Configuration */}
+        {/* Script Runner */}
         <Card>
           <CardHeader>
-            <CardTitle>Run Configuration</CardTitle>
+            <CardTitle>腳本執行器</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="script-select">Select Script</Label>
+              <Label htmlFor="script-select">選擇腳本</Label>
               <Select value={selectedScript} onValueChange={setSelectedScript}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a script..." />
+                  <SelectValue placeholder="選擇要執行的腳本" />
                 </SelectTrigger>
                 <SelectContent>
                   {currentScripts.map((script) => (
@@ -262,7 +199,17 @@ export function ScriptsTab() {
             </div>
 
             <div>
-              <Label htmlFor="package-manager">Package Manager</Label>
+              <Label htmlFor="script-args">參數</Label>
+              <Input
+                id="script-args"
+                placeholder="--flag value"
+                value={scriptArgs}
+                onChange={(e) => setScriptArgs(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="package-manager">套件管理器</Label>
               <Select value={packageManager} onValueChange={setPackageManager}>
                 <SelectTrigger>
                   <SelectValue />
@@ -276,40 +223,19 @@ export function ScriptsTab() {
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="script-args">Additional Arguments</Label>
-              <Input
-                id="script-args"
-                placeholder="e.g., --watch --port 3001"
-                value={scriptArgs}
-                onChange={(e) => setScriptArgs(e.target.value)}
-              />
-            </div>
-
             <Separator />
-
-            <div className="space-y-2">
-              <Label>Command Preview</Label>
-              <div className="p-3 bg-muted rounded-md font-mono text-sm">
-                {selectedScript ? (
-                  `${packageManager} run ${selectedScript}${scriptArgs ? ` ${scriptArgs}` : ''}`
-                ) : (
-                  'Select a script to see command preview'
-                )}
-              </div>
-            </div>
 
             <Button 
               className="w-full" 
               disabled={!selectedScript}
-              onClick={() => selectedScript && handleRunScript(selectedScript)}
+              onClick={() => selectedScript && runScript(selectedScript)}
             >
               <Play className="mr-2 h-4 w-4" />
-              Run Script
+              執行腳本
             </Button>
           </CardContent>
         </Card>
       </div>
     </div>
   );
-}
+} 

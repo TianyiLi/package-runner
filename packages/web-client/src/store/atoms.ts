@@ -1,15 +1,17 @@
+import { PackageManager, ProjectType } from '@/features/repository/types';
+import { PackageJson } from '@/types';
 import { atom } from 'jotai';
 
 export interface Repository {
   id: string;
   name: string;
   path: string;
-  type: 'vite' | 'next' | 'react' | 'node' | 'unknown';
-  packageManager: 'npm' | 'pnpm' | 'yarn' | 'bun';
+  type: ProjectType;
+  packageManager: PackageManager;
   lastAccessed: Date;
   isActive: boolean;
   isFavorite?: boolean;
-  packageJson?: any;
+  packageJson?: PackageJson;
   configFiles?: string[];
 }
 
@@ -56,14 +58,20 @@ export const projectConfigAtom = atom<ProjectConfig>({
 export const currentRepositoryScriptsAtom = atom((get) => {
   const selectedRepo = get(selectedRepositoryAtom);
   const allScripts = get(scriptsAtom);
-  return selectedRepo ? allScripts.filter(script => script.repositoryId === selectedRepo.id) : [];
+  if (!selectedRepo) {
+    return []
+  }
+  return allScripts.filter(script => script.repositoryId === selectedRepo.id);
 });
 
 export const currentRepositoryEnvVarsAtom = atom((get) => {
   const selectedRepo = get(selectedRepositoryAtom);
   const allEnvVars = get(envVariablesAtom);
-  return selectedRepo ? allEnvVars.filter(env => env.repositoryId === selectedRepo.id) : [];
+  if (!selectedRepo) {
+    return []
+  }
+  return allEnvVars.filter(env => env.repositoryId === selectedRepo.id);
 });
 
-export const activeTabAtom = atom('scripts');
+export const activeTabAtom = atom<string>('scripts');
 export const isLoadingAtom = atom(false);
